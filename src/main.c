@@ -4,33 +4,44 @@
 #include <ctype.h>
 #include <string.h>
 
-void startGame();
+#define EMPTYSCR printf("\e[1;1H\e[2J") //Clears the screen [less to type] (https://stackoverflow.com/questions/2347770/how-do-you-clear-the-console-screen-in-c)
+
+typedef struct
+{
+    char name[25];
+    int score;
+}Player;
+
+void startGame(Player user);
 
 void terminatorRemove(char* msg);
+
+void zeroPlayer(Player* player);
 
 int main(void) {
     //TODO: Retrieve username from disk
     bool usernameStored = false; //Temporary to fool the system
 
     //The username of the owner of the program
-    char username[30];
+    Player user;
+    zeroPlayer(&user);
     if (!usernameStored)
     {
         printf("Your new username (Max 25 chars)-> ");
-        fgets(username, 30, stdin); //Grabs input from the command line
+        fgets(user.name, 25, stdin); //Grabs input from the command line
+        terminatorRemove(user.name);
     }
 
     //Should the command-execute loop end
     bool endLoop = false;
     while (!endLoop)
     {
-        printf("\e[1;1H\e[2J");//Clears the screen (https://stackoverflow.com/questions/2347770/how-do-you-clear-the-console-screen-in-c)
+        EMPTYSCR;
         //Holds the current command passed to the program
         char command[16];
         printf("Don't forget \"Help\"\n-> ");
         fgets(command, 16, stdin);
         //int cmdLen = strlen(command)-1; //For removal of the newline
-        //command[cmdLen] = '\0';
         terminatorRemove(command);
         //Turns command into lowercase form for standardization
         for (size_t i = 0; i < strlen(command); i++)
@@ -50,7 +61,7 @@ int main(void) {
         else if (!strncmp(command, "start game", 16))
         {
             printf("Starting Game\n");
-            startGame();
+            startGame(user);
             endLoop = true;
         }
         else if (!strncmp(command, "exit", 16))
@@ -65,6 +76,12 @@ int main(void) {
     }
     
     return 0;
+}
+
+void zeroPlayer(Player* player) {
+    memset(player->name, 0, sizeof(player->name));
+    player->score = 0;
+    return;
 }
 
 //Takes in char array and removes the last character, designed to be \n
@@ -85,17 +102,47 @@ int getInt(char* message) {
     return strtol(num, (char**)NULL, 10);
 }
 
-void startGame() {
+//Primary game loop
+void startGame(Player user) {
     //Number of other players in the game
     int numOfPlayers = getInt("Number of other players");
 
     //Names of each player
-    char playerNames[numOfPlayers][25];
+    Player players[numOfPlayers+1];
     for (size_t i = 0; i < numOfPlayers; i++)
     {
         printf("Player %d what is your name (25 chars) -> ", i+1);
-        fgets(playerNames[i], 25, stdin);
-        terminatorRemove(playerNames[i]); //TODO: Confirm name
+        zeroPlayer(&players[i]);
+        fgets(players[i].name, 25, stdin);
+        terminatorRemove(players[i].name); //TODO: Confirm name
     }
+
+    /*Insert main user at random location within the array*/
+    //Offset of where the main user will be placed
+    int userOffset = rand() % numOfPlayers;// (https://stackoverflow.com/questions/822323/how-to-generate-a-random-int-in-c)
+    for (size_t i = 0; i < numOfPlayers; i++)
+    {
+        int current = numOfPlayers-(i+1);
+        if (current >= userOffset)
+        {
+            players[(numOfPlayers-i)] = players[current];
+        }   
+    }
+    players[userOffset] = user;
+    numOfPlayers++;
+
+    EMPTYSCR;
+    //Number of holes
+    int holeCount = getInt("How many holes on the course");
+    for (size_t i = 0; i < holeCount; i++)
+    {
+        //EMPTYSCR;
+        for (size_t j = 0; j < numOfPlayers; j++)
+        {
+            printf("(HOLE %d) What did %s (Player %d) get", i+1, players[j].name, j+1);
+            players[j].score = getInt("");
+        }
+    }
+    
     return;
 }
