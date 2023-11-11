@@ -166,7 +166,7 @@ void startGame(Player user) {
         }
         
         //Sort the array(using inverted quicksort)
-        for (size_t t = 1; i < numOfPlayers; t++)
+        for (size_t t = 1; t < numOfPlayers; t++)
         {
             int j = t;
             while (j > 0 && players[j-1].score > players[j].score)
