@@ -37,7 +37,6 @@ int main(void) {
     bool endLoop = false;
     while (!endLoop)
     {
-        EMPTYSCR;
         //Holds the current command passed to the program
         char command[16];
         printf("Don't forget \"Help\"\n-> ");
@@ -54,6 +53,7 @@ int main(void) {
         //The ! is necessary because "true" to strcmp is zero, not one
         if (!strncmp(command, "help", 16))
         {
+            EMPTYSCR;
             printf(
                 "All commands are not case sensitive\n"
                 "Start Game -> Begins a new game\n"
@@ -178,7 +178,7 @@ void startGame(Player user) {
             }
         }
 
-        if ((i+1) < numOfPlayers) {
+        if ((i+1) < holeCount) {
             //Display the sorted array
             EMPTYSCR;
             printf("THE CURRENT STANDINGS (WAIT 10 SECS)\n");
