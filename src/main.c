@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <unistd.h>
 
 #define EMPTYSCR printf("\e[1;1H\e[2J") //Clears the screen [less to type] (https://stackoverflow.com/questions/2347770/how-do-you-clear-the-console-screen-in-c)
 
@@ -95,9 +96,9 @@ void terminatorRemove(char* msg) {
 * @return The unsigned integer representation of the input from the CLI, if negative error in execution
 */
 int getInt(char* message) {
-    char num[2];//Max 2 digits
+    char num[3];//Max 2 digits
     printf("%s (max 2 digits) -> ", message);
-    fgets(num, 2, stdin);
+    fgets(num, 3, stdin);
     fseek(stdin, 0, SEEK_END); //Moves to end of stdin buffer (https://stackoverflow.com/questions/7898215/how-can-i-clear-an-input-buffer-in-c)
     return strtol(num, (char**)NULL, 10);
 }
@@ -136,13 +137,45 @@ void startGame(Player user) {
     int holeCount = getInt("How many holes on the course");
     for (size_t i = 0; i < holeCount; i++)
     {
-        //EMPTYSCR;
+        EMPTYSCR;
         for (size_t j = 0; j < numOfPlayers; j++)
         {
             printf("(HOLE %d) What did %s (Player %d) get", i+1, players[j].name, j+1);
-            players[j].score = getInt("");
+            players[j].score += getInt("");
+        }
+        
+        //Sort the array(using inverted quicksort)
+        for (size_t t = 1; i < numOfPlayers; t++)
+        {
+            int j = t;
+            while (j > 0 && players[j-1].score > players[j].score)
+            {
+                Player swapHolder = players[j];
+                players[j] = players[j-1];
+                players[j-1] = swapHolder;
+                j--;
+            }
+        }
+
+        if ((i+1) < numOfPlayers) {
+            //Display the sorted array
+            EMPTYSCR;
+            printf("THE CURRENT STANDINGS (WAIT 10 SECS)\n");
+            for (size_t i = 0; i < numOfPlayers; i++)
+            {
+                printf("In position %d is %s with %d points!\n", i+1, players[i].name, players[i].score);
+            }
+            sleep(10); //Ten second delay
         }
     }
-    
+
+    EMPTYSCR;
+    printf("THE FINAL SCORES ARE (PRESS ENTER TO EXIT):\n");
+    for (size_t i = 0; i < numOfPlayers; i++)
+    {
+        printf("In position %d is %s with %d points!\n", i+1, players[i].name, players[i].score);
+    }
+    getchar();
+
     return;
 }
