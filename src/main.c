@@ -97,9 +97,30 @@ void terminatorRemove(char* msg) {
 */
 int getInt(char* message) {
     char num[3];//Max 2 digits
-    printf("%s (max 2 digits) -> ", message);
-    fgets(num, 3, stdin);
-    fseek(stdin, 0, SEEK_END); //Moves to end of stdin buffer (https://stackoverflow.com/questions/7898215/how-can-i-clear-an-input-buffer-in-c)
+    bool cont = true;
+    while (cont)
+    {
+        printf("%s (max 2 digits) -> ", message);
+        fgets(num, 3, stdin);
+        fseek(stdin, 0, SEEK_END); //Moves to end of stdin buffer (https://stackoverflow.com/questions/7898215/how-can-i-clear-an-input-buffer-in-c)
+        //Check for decimal
+        cont = false; //Default to correct input
+        for (size_t i = 0; i < 3; i++)
+        {
+            if (num[i] == '\0' || num[i] == '\n')
+            {
+                continue;
+            }
+            else if (num[i] < 48 || num[i] > 57)
+            {
+                printf("\033[1A"); //From https://unix.stackexchange.com/questions/43075/how-to-change-the-contents-of-a-line-on-the-terminal-as-opposed-to-writing-a-new
+                printf("\033[K");
+                printf("INVALID PREV VALUE - ");
+                cont = true;
+            }
+        }
+    }
+    
     return strtol(num, (char**)NULL, 10);
 }
 
